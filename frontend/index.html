@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultFlow Secure Share</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="page-glow page-glow-one"></div>
+    <div class="page-glow page-glow-two"></div>
+    <div class="page-grid"></div>
+
+    <div class="app-shell">
+        <header class="topbar reveal">
+            <div>
+                <p class="eyebrow">Secure File Sharing</p>
+                <h1>VaultFlow</h1>
+            </div>
+            <div class="topbar-actions">
+                <span class="status-pill" id="serverStatusPill">Checking backend...</span>
+                <button class="ghost-button" id="refreshHealthButton" type="button">Refresh Status</button>
+            </div>
+        </header>
+
+        <section class="hero reveal">
+            <div class="hero-copy">
+                <p class="eyebrow">Encrypted transfer workspace</p>
+                <h2>Upload, track, and decrypt files through your Spring backend.</h2>
+                
+
+                <div class="hero-controls">
+                    <label class="field compact">
+                        <span>Backend Base URL</span>
+                        <input id="apiBaseInput" type="text" value="http://localhost:8080" placeholder="http://localhost:8080">
+                    </label>
+                    <button class="primary-button" id="saveApiBaseButton" type="button">Connect Workspace</button>
+                </div>
+
+                <div class="hero-badges">
+                    <span>JWT Session</span>
+                    <span>AES + RSA Backend Flow</span>
+                    <span>Responsive Dashboard</span>
+                </div>
+            </div>
+
+            <div class="hero-panel">
+                <div class="metric-card">
+                    <span class="metric-label">Protected Routes</span>
+                    <strong>3</strong>
+                    <small>List, upload, and download</small>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Session</span>
+                    <strong id="sessionMetric">Guest</strong>
+                    <small id="sessionMetricDetail">Sign in to unlock the vault</small>
+                </div>
+                <div class="metric-card accent">
+                    <span class="metric-label">Tracked Files</span>
+                    <strong id="trackedFileCount">0</strong>
+                    <small>Synced from your backend account</small>
+                </div>
+            </div>
+        </section>
+
+        <main class="dashboard">
+            <section class="card auth-card reveal">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Access</p>
+                        <h3>Identity & Session</h3>
+                    </div>
+                    <p class="card-subtitle">Create an account, then sign in to generate a JWT.</p>
+                </div>
+
+                <div class="auth-grid">
+                    <form id="signupForm" class="panel-form">
+                        <div class="panel-heading">
+                            <h4>Create Account</h4>
+                            <p>Generates the RSA keypair on the backend during signup.</p>
+                        </div>
+                        <label class="field">
+                            <span>Email</span>
+                            <input id="signupEmail" name="email" type="email" placeholder="you@example.com" required>
+                        </label>
+                        <label class="field">
+                            <span>Password</span>
+                            <input id="signupPassword" name="password" type="password" placeholder="Choose a password" required>
+                        </label>
+                        <button class="secondary-button" type="submit">Create Secure Account</button>
+                        <p class="inline-feedback" id="signupFeedback">Ready to register.</p>
+                    </form>
+
+                    <form id="loginForm" class="panel-form emphasized">
+                        <div class="panel-heading">
+                            <h4>Sign In</h4>
+                            <p>Stores the returned JWT locally in this browser only.</p>
+                        </div>
+                        <label class="field">
+                            <span>Email</span>
+                            <input id="loginEmail" name="email" type="email" placeholder="you@example.com" required>
+                        </label>
+                        <label class="field">
+                            <span>Password</span>
+                            <input id="loginPassword" name="password" type="password" placeholder="Your password" required>
+                        </label>
+                        <button class="primary-button" type="submit">Open Vault Session</button>
+                        <p class="inline-feedback" id="loginFeedback">Waiting for your session.</p>
+                    </form>
+                </div>
+            </section>
+
+            <section class="card session-card reveal">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Session</p>
+                        <h3>Current Workspace</h3>
+                    </div>
+                    <button class="ghost-button" id="logoutButton" type="button">Clear Session</button>
+                </div>
+
+                <div class="session-summary">
+                    <div class="session-block">
+                        <span class="session-label">Signed in as</span>
+                        <strong id="sessionEmail">Not signed in</strong>
+                    </div>
+                    <div class="session-block">
+                        <span class="session-label">Token preview</span>
+                        <code id="tokenPreview">No token stored</code>
+                    </div>
+                    <div class="session-actions">
+                        <button class="secondary-button" id="refreshFilesButton" type="button">Refresh My Files</button>
+                    </div>
+                </div>
+
+                <div class="notice-strip" id="globalNotice">
+                    Connect to the backend, then sign in to upload encrypted files.
+                </div>
+            </section>
+
+            <section class="card upload-card reveal">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Transfer</p>
+                        <h3>Upload File</h3>
+                    </div>
+                    <p class="card-subtitle">Uses the authenticated multipart upload endpoint.</p>
+                </div>
+
+                <form id="uploadForm" class="stack-form">
+                    <label class="file-drop" for="uploadFile">
+                        <input id="uploadFile" name="file" type="file" required>
+                        <span class="file-drop-title">Choose a file to encrypt and upload</span>
+                        <span class="file-drop-text" id="selectedFileName">No file selected</span>
+                    </label>
+                    <button class="primary-button" type="submit">Upload to Vault</button>
+                </form>
+
+                <div class="progress-shell">
+                    <div class="progress-bar" id="uploadProgressBar"></div>
+                </div>
+                <p class="inline-feedback" id="uploadFeedback">No upload in progress.</p>
+
+                <div class="latest-upload" id="latestUploadCard">
+                    <span class="session-label">Latest upload</span>
+                    <strong>Nothing uploaded in this session yet</strong>
+                    <p>Once the backend returns a file ID, it will appear here for one-click download.</p>
+                </div>
+            </section>
+
+            <section class="card download-card reveal">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Retrieve</p>
+                        <h3>Download Files</h3>
+                    </div>
+                    <p class="card-subtitle">Browse your vault or download a specific file by ID.</p>
+                </div>
+
+                <div class="download-tabs">
+                    <button class="tab-button active" data-tab="browse" type="button">Browse Vault</button>
+                    <button class="tab-button" data-tab="search" type="button">Search by ID</button>
+                </div>
+
+                <div class="tab-content active" id="browse-tab">
+                    <p class="tab-description">Your encrypted files from the backend:</p>
+                    <div class="files-list" id="filesList"></div>
+                </div>
+
+                <div class="tab-content" id="search-tab">
+                    <p class="tab-description">Enter a file ID to download directly:</p>
+                    <form id="downloadForm" class="stack-form">
+                        <label class="field">
+                            <span>File ID</span>
+                            <input id="downloadFileId" type="number" min="1" placeholder="Enter a file id" required>
+                        </label>
+                        <button class="secondary-button" type="submit">Download File</button>
+                    </form>
+                </div>
+
+                <p class="inline-feedback" id="downloadFeedback">Sign in to load your files.</p>
+            </section>
+
+            <section class="card activity-card reveal">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Timeline</p>
+                        <h3>Activity Feed</h3>
+                    </div>
+                    <button class="ghost-button" id="clearActivityButton" type="button">Clear Feed</button>
+                </div>
+
+                <div class="activity-list" id="activityList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
